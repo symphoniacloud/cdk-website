@@ -1,6 +1,6 @@
 const { awscdk } = require('projen');
 const project = new awscdk.AwsCdkConstructLibrary({
-  author: 'Symphonia',
+  author: 'Symphonia LLC',
   authorAddress: 'open-source@symphonia.io',
   description: 'Deploy an S3-backed website using CloudFront',
   cdkVersion: '2.30.0',

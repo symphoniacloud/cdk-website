@@ -30,8 +30,8 @@
     "projen": "npx projen"
   },
   "author": {
-    "name": "Mike Roberts",
-    "email": "mike@symphonia.io",
+    "name": "Symphonia LLC",
+    "email": "open-source@symphonia.io",
     "organization": false
   },
   "devDependencies": {
