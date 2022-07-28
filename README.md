@@ -19,7 +19,7 @@ are in TypeScript, but this construct can be used in (**TODO - list languages**)
 To get started:
 
 1 - Add the cdk-website library to your project dependencies
-2 - In your application stack instantiate the construct, e.g. in Typescript:
+2 - In your application stack instantiate the construct, e.g. in TypeScript:
 
 ```typescript
 new Website(this, 'website')
@@ -28,5 +28,7 @@ new Website(this, 'website')
 3 - Deploy
 
 This will deploy an S3 bucket, and a CloudFront distribution that uses the S3 bucket as its origin. 
+
+There is an example for this basic usage [here](examples/typescript/basic).
 
 **TODO - more here...**
