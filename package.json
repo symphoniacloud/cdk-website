@@ -1,5 +1,5 @@
 {
-  "name": "cdk-website",
+  "name": "@symphoniacloud/cdk-website",
   "description": "Deploy an S3-backed website using CloudFront",
   "repository": {
     "type": "git",
