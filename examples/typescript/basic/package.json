@@ -1,0 +1,16 @@
+{
+    "name": "cdk-website-basic-example",
+    "version": "2022.1.0",
+    "private": true,
+    "devDependencies": {
+        "aws-cdk": "2.x",
+        "aws-cdk-lib": "2.x",
+        "@symphoniacloud/cdk-website": "0.x",
+        "constructs": "10.x",
+        "typescript": "4.x",
+        "@tsconfig/node16": "1.x"
+    },
+    "scripts": {
+        "deploy": "npx cdk diff --require-approval never"
+    }
+}
