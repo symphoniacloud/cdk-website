@@ -13,7 +13,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
   license: 'MIT',
   eslint: false,
   npmAccess: NpmAccess.PUBLIC,
-  depsUpgrade: false
+  mutableBuild: false,
+  depsUpgrade: false,
 
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
