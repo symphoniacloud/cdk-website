@@ -12,7 +12,10 @@ const project = new awscdk.AwsCdkConstructLibrary({
   keywords: ['cloudfront', 's3', 'website', 'aws-cdk'],
   license: 'MIT',
   eslint: false,
-  npmAccess: NpmAccess.PUBLIC
+  npmAccess: NpmAccess.PUBLIC,
+  mutableBuild: false,
+  depsUpgrade: false,
+  buildWorkflow: false
 
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
