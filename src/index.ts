@@ -1,12 +1,18 @@
-import { Certificate, ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
-import { Distribution, Function, FunctionCode, FunctionEventType, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
-import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
-import { ARecord, HostedZone, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
-import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
-import { BlockPublicAccess, Bucket, BucketEncryption, ObjectOwnership } from 'aws-cdk-lib/aws-s3';
-import { Construct } from 'constructs';
-import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
-import { AddBehaviorOptions } from 'aws-cdk-lib/aws-cloudfront/lib/distribution';
+import {Certificate, ICertificate} from 'aws-cdk-lib/aws-certificatemanager';
+import {
+    Distribution,
+    Function,
+    FunctionCode,
+    FunctionEventType, IDistribution,
+    ViewerProtocolPolicy
+} from 'aws-cdk-lib/aws-cloudfront';
+import {S3Origin} from 'aws-cdk-lib/aws-cloudfront-origins';
+import {ARecord, HostedZone, IHostedZone, RecordTarget} from 'aws-cdk-lib/aws-route53';
+import {CloudFrontTarget} from 'aws-cdk-lib/aws-route53-targets';
+import {BlockPublicAccess, Bucket, BucketEncryption, ObjectOwnership} from 'aws-cdk-lib/aws-s3';
+import {Construct} from 'constructs';
+import {BucketDeployment, Source} from 'aws-cdk-lib/aws-s3-deployment';
+import {AddBehaviorOptions} from 'aws-cdk-lib/aws-cloudfront/lib/distribution';
 
 export interface WebsiteProps {
     readonly customDomain?: WebsiteCustomDomain;
@@ -15,12 +21,20 @@ export interface WebsiteProps {
     readonly additionalDefaultBehaviorOptions?: AddBehaviorOptions;
 }
 
-export interface WebsiteCustomDomain {
-    readonly domainName: string;
-    readonly certificate: WebsiteCertificate;
-    readonly hostedZone?: WebsiteHostedZone;
+export type WebsiteCustomDomain = WebsiteSingleCustomDomain | WebsiteMultipleCustomDomains
 
-    // TODO - allow additional domain names - requires updates for DNS registration too
+export interface WebsiteSingleCustomDomain extends DomainDNSDetails {
+    readonly certificate: WebsiteCertificate;
+}
+
+export interface WebsiteMultipleCustomDomains {
+    readonly certificate: WebsiteCertificate;
+    readonly domains: DomainDNSDetails[]
+}
+
+export interface DomainDNSDetails {
+    readonly domainName: string;
+    readonly hostedZone?: WebsiteHostedZone;
 }
 
 export interface CertificateFromArn {
@@ -71,23 +85,14 @@ export class Website extends Construct {
             },
         });
 
-        if (props.customDomain && props.customDomain.hostedZone) {
-            const zone = isHostedZoneFromDomainName(props.customDomain.hostedZone)
-                ? HostedZone.fromLookup(this, 'zone', { domainName: props.customDomain.hostedZone.fromDomainName })
-                : props.customDomain.hostedZone;
-
-            new ARecord(this, 'DnsRecord', {
-                zone,
-                recordName: props.customDomain.domainName,
-                target: RecordTarget.fromAlias(new CloudFrontTarget(this.cloudFront)),
-            });
-        }
+        if (props.customDomain)
+            setupDNS(this, props.customDomain, this.cloudFront)
 
         if (props.content) {
             this.bucketDeployment = new BucketDeployment(this, 'Deploy', {
                 sources: [Source.asset(props.content.path)],
                 destinationBucket: this.siteBucket,
-                ...props.content.performCacheInvalidation ? { distribution: this.cloudFront } : {},
+                ...props.content.performCacheInvalidation ? {distribution: this.cloudFront} : {},
             });
         }
     }
@@ -96,7 +101,9 @@ export class Website extends Construct {
 function customDomainElements(scope: Construct, props: WebsiteProps) {
     if (props.customDomain) {
         return {
-            domainNames: [props.customDomain.domainName],
+            domainNames: isWebsiteSingleCustomDomain(props.customDomain)
+                ? [props.customDomain.domainName]
+                : props.customDomain.domains.map(({domainName}) => domainName),
             certificate: calculateCertificate(scope, props.customDomain.certificate),
         };
     }
@@ -112,20 +119,43 @@ function calculateCertificate(scope: Construct, certificate: { fromArn: string }
     }
 }
 
+function setupDNS(scope: Construct, customDomain: WebsiteCustomDomain, distribution: IDistribution) {
+    if (isWebsiteSingleCustomDomain(customDomain))
+        setupDNSForSingleDomain(scope, customDomain, distribution)
+    else
+        customDomain.domains.forEach((domain: DomainDNSDetails, index: number) => {
+            setupDNSForSingleDomain(scope, domain, distribution, `-${index}`)
+        })
+}
+
+function setupDNSForSingleDomain(scope: Construct, customDomain: DomainDNSDetails, distribution: IDistribution, idSuffix = '') {
+    if (customDomain.hostedZone) {
+        const zone = isHostedZoneFromDomainName(customDomain.hostedZone)
+            ? HostedZone.fromLookup(scope, `zone${idSuffix}`, {domainName: customDomain.hostedZone.fromDomainName})
+            : customDomain.hostedZone;
+
+        new ARecord(scope, `DnsRecord${idSuffix}`, {
+            zone,
+            recordName: customDomain.domainName,
+            target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+        });
+    }
+}
+
 function functionAssociations(scope: Construct, props: WebsiteProps) {
     if (!props.preProcessFunctionCode) {
         return {};
     }
 
     const functionCode = isPreProcessFunctionCodeFromPath(props.preProcessFunctionCode)
-        ? FunctionCode.fromFile({ filePath: props.preProcessFunctionCode.fromPath })
+        ? FunctionCode.fromFile({filePath: props.preProcessFunctionCode.fromPath})
         : props.preProcessFunctionCode;
 
     return {
         functionAssociations: [
             {
                 eventType: FunctionEventType.VIEWER_REQUEST,
-                function: new Function(scope, 'PreProcessFunction', { code: functionCode }),
+                function: new Function(scope, 'PreProcessFunction', {code: functionCode}),
             },
         ],
     };
@@ -135,6 +165,10 @@ function functionAssociations(scope: Construct, props: WebsiteProps) {
 
 export function isCertificateFromArn(certificate: WebsiteCertificate): certificate is CertificateFromArn {
     return (certificate as CertificateFromArn).fromArn !== undefined;
+}
+
+export function isWebsiteSingleCustomDomain(customDomain: WebsiteCustomDomain): customDomain is WebsiteSingleCustomDomain {
+    return (customDomain as WebsiteSingleCustomDomain).domainName !== undefined
 }
 
 export function isHostedZoneFromDomainName(hostedZone: WebsiteHostedZone): hostedZone is HostedZoneFromDomainName {

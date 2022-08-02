@@ -8,14 +8,19 @@ This construct can't support every use case - if it doesn't work for you feel fr
 version, or [let me know](mailto:mike@symphonia.io) if you have a suggestion for how it can be extended!
 
 <!-- TOC -->
-* [What it deploys](#what-it-deploys)
-* [Using cdk-website](#using-cdk-website)
-  * [Getting started](#getting-started)
-  * [Deploying content](#deploying-content)
-  * [Setting a custom domain name](#setting-a-custom-domain-name)
-  * [Specifying a CloudFront Function for pre-processing requests](#specifying-a-cloudfront-function-for-pre-processing-requests)
-  * [Setting additional behavior options](#setting-additional-behavior-options)
+* [CDK Construct for deploying a website](#cdk-construct-for-deploying-a-website)
+  * [What it deploys](#what-it-deploys)
+  * [Using cdk-website](#using-cdk-website)
+    * [Getting started](#getting-started)
+    * [Deploying content](#deploying-content)
+    * [Setting a custom domain name](#setting-a-custom-domain-name)
+      * [Setting a single custom domain name](#setting-a-single-custom-domain-name)
+      * [Setting multiple custom domain names](#setting-multiple-custom-domain-names)
+    * [Specifying a CloudFront Function for pre-processing requests](#specifying-a-cloudfront-function-for-pre-processing-requests)
+    * [Setting additional behavior options](#setting-additional-behavior-options)
+  * [TODO](#todo)
 <!-- TOC -->
+
 ## What it deploys
 
 ![primary resources](doc-images/basic-design.png)
@@ -91,7 +96,9 @@ see
 [here](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront-readme.html#domain-names-and-certificates)
 for more details
 
-Then, add or update the custom domain property:
+#### Setting a single custom domain name
+
+To set a single custom domain name, add or update the custom domain property:
 
 ```typescript
 new Website(this, 'website', {
@@ -136,6 +143,44 @@ new Website(this, 'website', {
 
 Similarly to the `certificate` property - if you already have the CDK object representing the Hosted Zone in your CDK
 app then you can just set `hostedZone` to be that object.
+
+#### Setting multiple custom domain names
+
+A CloudFront distribution can have multiple domain names, but they must share a certificate.
+
+For example, you might want to use `www.mywebsite.example.com` **and** `mywebsite.example.com` on the same distribution.
+These would share a certificate that could support both names.
+
+On the other hand each separate domain name might be resolved in a different hosted zone, and so the configuration
+for the `cdk-website` construct reflects that.
+
+Here's an example:
+
+```typescript
+new Website(this, 'website', {
+    customDomain: {
+        certificate: {
+            fromArn: myCertificateArn
+        },
+        domains: [{
+            domainName: 'mywebsite.example.com',
+            hostedZone: {
+                fromDomainName: `mywebsite.example.com`
+            }
+        }, {
+            domainName: 'www.mywebsite.example.com',
+            hostedZone: {
+                fromDomainName: `mywebsite.example.com`
+            }
+        }]
+    }
+})
+```
+
+In this example both `www.mywebsite.example.com` **and** `mywebsite.example.com` share a hosted zone.
+
+Note that just like with a single custom domain, the `hostedZone` property on each domain is optional - if you don't set it it's assumed that you'll manage DNS yourself.
+
 
 ### Specifying a CloudFront Function for pre-processing requests
 
