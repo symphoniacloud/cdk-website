@@ -44,10 +44,15 @@ For more details, see [the source](src/index.ts).
 
 ## Using cdk-website
 
-This README assumes that you are already very familiar with deploying to AWS using CDK. While the [examples](examples)
-provide
-skeleton projects they don't (for
-example) [bootstrap CDK in your account](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html).
+This README assumes that you are already very familiar with deploying to AWS using CDK. 
+
+If you need help getting started with CDK in general, then I recommend my [CDK bare-bones app](https://github.com/symphoniacloud/cdk-bare-bones).
+
+### Examples
+
+* the [one included in this repo](/examples/typescript/basic)
+* [Coffee Store Web Basic](https://github.com/symphoniacloud/coffee-store-web-basic) - A similar example as a template project
+* [Coffee Store Web Full](https://github.com/symphoniacloud/coffee-store-web-full) - An extension of _Coffee Store Web Basic_ that is a real working demo of a production-ready website project, including TLS certificates, DNS hosting, Github Actions Workflows, multiple CDK environments (prod vs test vs dev)
 
 ### Getting started
 
@@ -61,8 +66,6 @@ new Website(this, 'website')
 ```
 
 3. Deploy as usual
-
-There is an example for this basic usage [here](examples/typescript/basic/cdkApp.ts).
 
 ### Deploying content
 
@@ -181,7 +184,6 @@ In this example both `www.mywebsite.example.com` **and** `mywebsite.example.com`
 
 Note that just like with a single custom domain, the `hostedZone` property on each domain is optional - if you don't set it it's assumed that you'll manage DNS yourself.
 
-
 ### Specifying a CloudFront Function for pre-processing requests
 
 Since CloudFront doesn't support things like [htaccess files](https://httpd.apache.org/docs/2.4/howto/htaccess.html),
@@ -203,6 +205,8 @@ path.
 
 If you want to bundle your own zip file then you can also set `preProcessFunctionCode` to any valid
 [`FunctionCode` object](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.FunctionCode.html).
+
+The [Coffee Store Web Full](https://github.com/symphoniacloud/coffee-store-web-full) has an example of using a CloudFront function.
 
 ### Setting additional behavior options
 
@@ -236,7 +240,4 @@ new Website(this, 'website', {
 ## TODO
 
 * API documentation comments
-* more examples
 * publish for other languages (currently just JavaScript / TypeScript to NPM)
-* multiple domain names
-
