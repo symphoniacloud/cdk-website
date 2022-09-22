@@ -5,7 +5,7 @@
     "type": "git",
     "url": "https://github.com/symphoniacloud/cdk-website.git"
   },
-  "version": "0.0.8",
+  "version": "0.0.9",
   "scripts": {
     "build": "jsii",
     "doc": "jsii-docgen -o API.md",
