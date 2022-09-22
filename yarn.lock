@@ -179,10 +179,10 @@ at-least-node@^1.0.0:
   resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
-aws-cdk-lib@2.30.0:
-  version "2.30.0"
-  resolved "https://registry.yarnpkg.com/aws-cdk-lib/-/aws-cdk-lib-2.30.0.tgz#c3f02e15ab3622111b1b53f47fa4b504c8c39a67"
-  integrity sha512-e9KKwRF4vPzPpOXPq8dtzUdn6j2tmTrrSZmQu2tOiZni0eB1vhiOVwaxc/8aEUrz8wUZ8t2gEitYdJmtm/GWhQ==
+aws-cdk-lib@2.42.0:
+  version "2.42.0"
+  resolved "https://registry.yarnpkg.com/aws-cdk-lib/-/aws-cdk-lib-2.42.0.tgz#d8ff590481bfb2e23bbda17d3daba855a25e8039"
+  integrity sha512-jHHcUm2baKv87L7MO0fktAhmtDZfnHLPsLIktzgW2zCDRNUCFoUPkQ+44eUkZkgmL2sEOSMEQFhbNCxmbW4OSQ==
   dependencies:
     "@balena/dockerignore" "^1.0.2"
     case "1.6.3"
@@ -340,10 +340,10 @@ concat-stream@^2.0.0:
     readable-stream "^3.0.2"
     typedarray "^0.0.6"
 
-constructs@10.0.5:
-  version "10.0.5"
-  resolved "https://registry.yarnpkg.com/constructs/-/constructs-10.0.5.tgz#48c0402f1b98bbf5664efff74a8015e6e8a9f41e"
-  integrity sha512-IwOwekzrASFC3qt4ozCtV09rteAIAesuCGsW0p+uBfqHd2XcvA5CXqJjgf4eUqm6g8e/noXlVCMDWwC8GaLtrg==
+constructs@10.1.109:
+  version "10.1.109"
+  resolved "https://registry.yarnpkg.com/constructs/-/constructs-10.1.109.tgz#e5251dd1732aa07e5c0c030f60ac8f50899030ad"
+  integrity sha512-TBahkORv3V3T9xguVQ7QQFx61RKqLekEy32FZxFb5rWgbDjjL9Ljo28Xb9HqDNnrZNB0Q2JGDr0csJcp1WTFZA==
 
 conventional-changelog-angular@^5.0.12:
   version "5.0.13"

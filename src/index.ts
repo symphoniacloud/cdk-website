@@ -1,24 +1,37 @@
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import {Certificate, ICertificate} from 'aws-cdk-lib/aws-certificatemanager';
 import {
+    AddBehaviorOptions,
+    BehaviorOptions,
     Distribution,
+    ErrorResponse,
     Function,
     FunctionCode,
-    FunctionEventType, IDistribution,
+    FunctionEventType,
+    GeoRestriction,
+    HttpVersion,
+    IDistribution,
+    PriceClass,
+    SecurityPolicyProtocol,
+    SSLMethod,
     ViewerProtocolPolicy
 } from 'aws-cdk-lib/aws-cloudfront';
 import {S3Origin} from 'aws-cdk-lib/aws-cloudfront-origins';
 import {ARecord, HostedZone, IHostedZone, RecordTarget} from 'aws-cdk-lib/aws-route53';
 import {CloudFrontTarget} from 'aws-cdk-lib/aws-route53-targets';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 import {BlockPublicAccess, Bucket, BucketEncryption, ObjectOwnership} from 'aws-cdk-lib/aws-s3';
 import {Construct} from 'constructs';
 import {BucketDeployment, Source} from 'aws-cdk-lib/aws-s3-deployment';
-import {AddBehaviorOptions} from 'aws-cdk-lib/aws-cloudfront/lib/distribution';
+
 
 export interface WebsiteProps {
     readonly customDomain?: WebsiteCustomDomain;
     readonly content?: WebsiteContent; // if null don't deploy
     readonly preProcessFunctionCode?: WebsitePreProcessFunctionCode;
     readonly additionalDefaultBehaviorOptions?: AddBehaviorOptions;
+    // We can't just use Partial<DistributionProps> here, because jsii won't allow that
+    readonly distributionPropertyOverrides?: DistributionPropsOverrides
 }
 
 export type WebsiteCustomDomain = WebsiteSingleCustomDomain | WebsiteMultipleCustomDomains
@@ -60,6 +73,31 @@ export interface WebsiteContent {
     readonly performCacheInvalidation?: boolean;
 }
 
+/**
+ * All the optional properties from DistributionProps
+ * We can't just use Partial<DistributionProps> here, because jsii won't allow that
+ */
+export interface DistributionPropsOverrides {
+    readonly additionalBehaviors?: Record<string, BehaviorOptions>;
+    readonly certificate?: acm.ICertificate;
+    readonly comment?: string;
+    readonly defaultRootObject?: string;
+    readonly domainNames?: string[];
+    readonly enabled?: boolean;
+    readonly enableIpv6?: boolean;
+    readonly enableLogging?: boolean;
+    readonly geoRestriction?: GeoRestriction;
+    readonly httpVersion?: HttpVersion;
+    readonly logBucket?: s3.IBucket;
+    readonly logIncludesCookies?: boolean;
+    readonly logFilePrefix?: string;
+    readonly priceClass?: PriceClass;
+    readonly webAclId?: string;
+    readonly errorResponses?: ErrorResponse[];
+    readonly minimumProtocolVersion?: SecurityPolicyProtocol;
+    readonly sslSupportMethod?: SSLMethod;
+}
+
 export class Website extends Construct {
     readonly siteBucket: Bucket;
     readonly cloudFront: Distribution;
@@ -76,6 +114,7 @@ export class Website extends Construct {
 
         this.cloudFront = new Distribution(this, 'Distribution', {
             defaultRootObject: 'index.html',
+            httpVersion: HttpVersion.HTTP2_AND_3,
             ...customDomainElements(this, props),
             defaultBehavior: {
                 origin: new S3Origin(this.siteBucket),
@@ -83,6 +122,7 @@ export class Website extends Construct {
                 ...functionAssociations(this, props),
                 ...props.additionalDefaultBehaviorOptions,
             },
+            ...props.distributionPropertyOverrides
         });
 
         if (props.customDomain)

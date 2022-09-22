@@ -34,11 +34,15 @@ This construct deploys the following primary resources:
       to allow access to the bucket from CloudFront
     * Mostly the construct uses the defaults in the
       AWS [`Distribution` construct](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.Distribution.html)
-      , apart from it always redirects `http` requests to `https`
+      , apart from:
+      * It always redirects `http` requests to `https`
+      * It sets http version to "2 and 3", enabling http3 support
+    * Any `DistributionProps` property can be overridden by setting the optional `distributionPropertyOverrides` on `WebsiteProps`
 * If custom domain properties are set in the configuration, then the construct sets a domain name and certificate on the
   distribution
     * It will also create a Route53 DNS record if a Route53 Zone is specified
 * If a local content path is specified, then content will be uploaded to the S3 bucket during deployment
+
 
 For more details, see [the source](src/index.ts).
 
@@ -239,5 +243,4 @@ new Website(this, 'website', {
 
 ## TODO
 
-* API documentation comments
 * publish for other languages (currently just JavaScript / TypeScript to NPM)
