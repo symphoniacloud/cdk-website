@@ -1,0 +1,19 @@
+name: Setup, Build, Package
+
+description: Setup, Build, Package
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14.x
+
+    - name: Install dependencies
+      shell: bash
+      run: yarn install --frozen-lockfile
+
+    - name: Build and Package
+      shell: bash
+      run: yarn run all
+
